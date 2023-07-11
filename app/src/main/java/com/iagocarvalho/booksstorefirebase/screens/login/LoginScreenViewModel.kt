@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
@@ -17,6 +18,8 @@ import java.lang.Exception
 class LoginScreenViewModel : ViewModel() {
     //val loadingState = MutableStateFlow(LoadingState.IDLE)
     private val auth: FirebaseAuth = Firebase.auth
+    private var currentUser = Firebase.auth.currentUser
+
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
@@ -85,10 +88,41 @@ class LoginScreenViewModel : ViewModel() {
                 quote = "life is gret",
                 profession = "",
                 id = null
-            )
+            ).toMap()
 
         FirebaseFirestore.getInstance().collection("users")
             .add(user)
 
+    }
+
+    fun SingOut() {
+        FirebaseAuth.getInstance().signOut()
+    }
+
+    fun sendEmailVerification() {
+        currentUser!!.sendEmailVerification()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FB", "sendEmailVerification: Email enviado com sucesso ")
+                } else {
+                    Log.d("FB", "sendEmailVerification: ${task.exception}")
+                }
+            }
+    }
+
+    fun sendPasswordResetEmail(emailCurrentUser: String) {
+
+        Firebase.auth.sendPasswordResetEmail(emailCurrentUser.toString())
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d(
+                        "Fb",
+                        "sendPasswordResetEmail: Email para redefinir Enviado ${task.result}"
+                    )
+                } else {
+                    Log.d("FB", "sendPasswordResetEmail: ${task.exception}")
+                }
+
+            }
     }
 }
