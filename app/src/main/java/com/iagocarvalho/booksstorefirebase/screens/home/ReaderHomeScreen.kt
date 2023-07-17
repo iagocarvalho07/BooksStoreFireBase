@@ -1,7 +1,11 @@
 package com.iagocarvalho.booksstorefirebase.screens.home
 
 import android.icu.text.CaseMap.Title
+import android.service.quicksettings.Tile
+import android.support.customtabs.IPostMessageService.Default
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,9 +13,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -19,6 +26,11 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -36,13 +48,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.google.api.ResourceProto.resource
 import com.google.firebase.auth.FirebaseAuth
+import com.iagocarvalho.booksstorefirebase.components.FABcontent
+import com.iagocarvalho.booksstorefirebase.components.ReaderAppBar
+import com.iagocarvalho.booksstorefirebase.model.MBook
 import com.iagocarvalho.booksstorefirebase.navigation.ReaderScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,23 +71,33 @@ fun HomeScreen(navController: NavController) {
         topBar = {
             ReaderAppBar(tittle = "A.Reader", navController = navController)
         },
-        floatingActionButton = { FABcontent {} }
+        floatingActionButton = { FABcontent {navController.navigate(ReaderScreens.SearchScreen.name)} }
     ) { contentPadding ->
-        Box(modifier = Modifier.padding(contentPadding))
-        Surface(modifier = Modifier.fillMaxSize()) {
-            HomeContent(navController = navController)
+        Box(modifier = Modifier.padding(contentPadding)) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                HomeContent(navController = navController)
 
+            }
         }
     }
 }
 
 @Composable
 fun HomeContent(navController: NavController) {
+    val listOfBooks = listOf(
+        MBook("asad", "hello ", "all of us ", "algusm"),
+        MBook("asad", "hasdello ", "all of us ", "algusm"),
+        MBook("asad", "hasdasello ", "all of us ", "algusm"),
+        MBook("asad", "heddllo ", "all of us ", "algusm"),
+        MBook("asad", "asda ", "asdasd of us ", "algusm"),
+        )
+
     val firebeseInstance = FirebaseAuth.getInstance()
     val currentUserName = if (!firebeseInstance.currentUser?.email.isNullOrEmpty())
-        FirebaseAuth.getInstance().currentUser?.email?.split("@")?.get(0)else "N/A"
+        FirebaseAuth.getInstance().currentUser?.email?.split("@")?.get(0) else "N/A"
 
-    Column(modifier = Modifier.padding(2.dp), verticalArrangement = Arrangement.SpaceEvenly) {
+
+    Column(modifier = Modifier.padding(2.dp), verticalArrangement = Arrangement.Top) {
         Row(modifier = Modifier.align(alignment = Alignment.Start)) {
             Text(text = "Your reading \n " + "activity rigth now")
             Spacer(modifier = Modifier.fillMaxWidth(0.7f))
@@ -86,79 +115,182 @@ fun HomeContent(navController: NavController) {
                     color = Color.Red,
                     fontSize = 20.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Clip)
+                    overflow = TextOverflow.Clip
+                )
                 Divider()
-
             }
+        }
+        ReaderRinghtNowArea(book = listOf(), navController = navController)
+        Text(text = "Reading List")
+        BookListArea(listOfBooks = listOfBooks, navController = navController)
+
+
+    }
+}
+
+@Composable
+fun BookListArea(listOfBooks: List<MBook>, navController: NavController) {
+    HorizontalScrollComponent(listOfBooks) {
+        //todo on click go to detalis
+    }
+}
+
+@Composable
+fun HorizontalScrollComponent(listOfBooks: List<MBook>, onCardPress: (String) -> Unit = {}) {
+    val scroolState = rememberScrollState()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(280.dp)
+            .horizontalScroll(scroolState)
+    ) {
+        for (book in listOfBooks) {
+            ListCard(book) {
+                onCardPress(it)
+            }
+        }
+    }
+
+}
+
+
+@Preview
+@Composable
+fun ListCard(
+    book: MBook = MBook("meu livro", "running", "me and you", "Hello World"),
+    onPresDetails: (String) -> Unit = {}
+) {
+    val context = LocalContext.current
+    val resources = context.resources
+
+    val displayMatrix = resources.displayMetrics
+    val screenWidth = displayMatrix.widthPixels / displayMatrix.density
+    val spacing = 10.dp
+
+    Card(
+        shape = RoundedCornerShape(29.dp),
+        colors = CardDefaults.cardColors(Color.White),
+        elevation = CardDefaults.cardElevation(16.dp),
+        modifier = Modifier
+            .padding(16.dp)
+            .height(242.dp)
+            .width(202.dp)
+            .clickable { onPresDetails.invoke(book.title.toString()) }
+
+
+    ) {
+        Column(modifier = Modifier.width(screenWidth.dp - (spacing * 2))) {
+            Row(horizontalArrangement = Arrangement.Center) {
+                AsyncImage(
+                    model = "",
+                    contentDescription = "Image Book",
+                    modifier = Modifier
+                        .height(140.dp)
+                        .width(100.dp)
+                        .padding(4.dp)
+                )
+                Spacer(modifier = Modifier.width(50.dp))
+                Column(
+                    modifier = Modifier.padding(top = 25.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = "Favorite",
+                        modifier = Modifier.padding(
+                            bottom = 1.dp
+                        )
+                    )
+                    BookRating()
+                }
+            }
+            Text(
+                text = book.title.toString(),
+                modifier = Modifier.padding(4.dp),
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = book.authors.toString(),
+                modifier = Modifier.padding(4.dp),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                RounderButton(label = "Reading", radius = 70)
+            }
+        }
+    }
+
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RounderButton(label: String = "Reading", radius: Int = 29, onPres: () -> Unit = {}) {
+    Surface(
+        modifier = Modifier.clip(
+            RoundedCornerShape(
+                bottomEndPercent = radius,
+                topStartPercent = radius
+            )
+        ),
+        color = Color(0xFF92CBDF)
+    ) {
+        Column(
+            modifier = Modifier
+                .width(90.dp)
+                .heightIn(40.dp)
+                .clickable { onPres.invoke() },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = label, style = TextStyle(color = Color.White, fontSize = 15.sp))
+
+
         }
 
     }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ReaderAppBar(
-    tittle: String,
-    showProfile: Boolean = true,
-    navController: NavController
-) {
-    TopAppBar(
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (showProfile) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "LogoIcon",
-                        modifier = Modifier
-                            .clip(
-                                RoundedCornerShape(12.dp)
-                            )
-                            .scale(0.6f)
-                    )
-                }
-                Text(
-                    text = tittle,
-                    color = Color.Red.copy(alpha = 0.7f),
-                    style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                )
-                Spacer(modifier = Modifier.width(150.dp))
-            }
-        },
-        actions = {
-            IconButton(onClick = {
-                FirebaseAuth.getInstance().signOut().run {
-                    navController.navigate(ReaderScreens.LoginScreen.name)
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.ExitToApp,
-                    contentDescription = "Exit App",
-                    tint = Color.Red
-                )
-
-            }
-        },
-        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.LightGray)
-    )
-
 
 }
 
-
 @Composable
-fun FABcontent(onTap: () -> Unit) {
-    FloatingActionButton(
-        onClick = { onTap() },
-        shape = RoundedCornerShape(50.dp),
-        containerColor = Color.LightGray
+fun BookRating(score: Double = 4.5) {
+    Surface(
+        modifier = Modifier
+            .height(70.dp)
+            .padding(4.dp), shape = RoundedCornerShape(56.dp),
+        shadowElevation = 50.dp,
+        tonalElevation = 20.dp,
+
+        color = Color.White
     ) {
-        Icon(
-            imageVector = Icons.Default.Add,
-            contentDescription = "Add a book",
-            tint = MaterialTheme.colorScheme.primary
-        )
+        Column(
+            modifier = Modifier.padding(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = "Star",
+                modifier = Modifier.padding(4.dp)
+            )
+            Text(text = score.toString(), style = MaterialTheme.typography.titleSmall)
+
+
+        }
 
     }
+
 }
 
+
+@Composable
+fun ReaderRinghtNowArea(book: List<MBook>, navController: NavController) {
+    ListCard()
+
+}

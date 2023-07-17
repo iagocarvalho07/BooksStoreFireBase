@@ -122,7 +122,6 @@ fun UserForm(
         .verticalScroll(
             rememberScrollState()
         )
-
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         if (isCreateAcount) Text(
             text = stringResource(id = R.string.creta_acct),
@@ -173,7 +172,6 @@ fun SubmitButton(
     ) {
         if (loadind) CircularProgressIndicator(modifier = Modifier.size(25.dp))
         else Text(text = textId, modifier = Modifier.padding(5.dp))
-
     }
 }
 
