@@ -1,6 +1,7 @@
 package com.iagocarvalho.booksstorefirebase.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -8,6 +9,7 @@ import com.iagocarvalho.booksstorefirebase.screens.ReaderSplashScreen
 import com.iagocarvalho.booksstorefirebase.screens.details.BookDetailsScreen
 import com.iagocarvalho.booksstorefirebase.screens.home.HomeScreen
 import com.iagocarvalho.booksstorefirebase.screens.login.LoginScreen
+import com.iagocarvalho.booksstorefirebase.screens.search.BookSearchViewModel
 import com.iagocarvalho.booksstorefirebase.screens.search.ReaderBookSearchScreen
 import com.iagocarvalho.booksstorefirebase.screens.stats.ReaderStatsScreen
 import com.iagocarvalho.booksstorefirebase.screens.update.BookUpadateScreen
@@ -26,7 +28,8 @@ fun ReaderNagivation() {
             HomeScreen(navController = navController)
         }
         composable(ReaderScreens.SearchScreen.name){
-            ReaderBookSearchScreen(navController = navController)
+            val viewmodel = hiltViewModel<BookSearchViewModel>()
+            ReaderBookSearchScreen(navController = navController, viewmodel)
         }
         composable(ReaderScreens.DetailsScreens.name){
             BookDetailsScreen(navController = navController)

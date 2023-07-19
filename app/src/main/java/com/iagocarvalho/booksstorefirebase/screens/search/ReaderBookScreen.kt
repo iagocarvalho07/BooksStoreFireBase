@@ -1,5 +1,6 @@
 package com.iagocarvalho.booksstorefirebase.screens.search
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -35,17 +37,22 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.iagocarvalho.booksstorefirebase.components.InputField
 import com.iagocarvalho.booksstorefirebase.components.ReaderAppBar
 import com.iagocarvalho.booksstorefirebase.model.MBook
+import com.iagocarvalho.booksstorefirebase.model.ModelApi.Item
 import com.iagocarvalho.booksstorefirebase.navigation.ReaderScreens
 
-@Preview
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderBookSearchScreen(navController: NavController = NavController(LocalContext.current)) {
+fun ReaderBookSearchScreen(
+    navController: NavController,
+    viewModel: BookSearchViewModel = hiltViewModel()
+) {
     Scaffold(
         topBar = {
             ReaderAppBar(
@@ -64,32 +71,43 @@ fun ReaderBookSearchScreen(navController: NavController = NavController(LocalCon
                     SearchForm(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
-                    )
+                            .padding(16.dp),
+                        viewModel = viewModel
+                    ) { query ->
+                        viewModel.serachBooks(query)
+
+                    }
                     Spacer(modifier = Modifier.height(13.dp))
-                    BookList(navController)
-
+                    BookList(navController, viewModel)
                 }
-
             }
         }
     }
 }
 
 @Composable
-fun BookList(navController: NavController) {
-    val listOfBooks = listOf(
-        MBook("asad", "hello ", "all of us ", "algusm"),
-        MBook("asad", "hasdello ", "all of us ", "algusm"),
-        MBook("asad", "hasdasello ", "all of us ", "algusm"),
-        MBook("asad", "heddllo ", "all of us ", "algusm"),
-        MBook("asad", "asda ", "asdasd of us ", "algusm"),
-    )
+fun BookList(navController: NavController, viewModel: BookSearchViewModel) {
+    if (viewModel.listOfBooks.value.loading == true) {
+        CircularProgressIndicator()
+    } else {
+        Log.d("Search", "BookList: ${viewModel.listOfBooks.value.data}")
+
+    }
+
+    val listOfBooks = viewModel.listOfBooks.value.data
+//
+//    val listOfBooks = listOf(
+//        MBook("asad", "hello ", "all of us ", "algusm"),
+//        MBook("asad", "hasdello ", "all of us ", "algusm"),
+//        MBook("asad", "hasdasello ", "all of us ", "algusm"),
+//        MBook("asad", "heddllo ", "all of us ", "algusm"),
+//        MBook("asad", "asda ", "asdasd of us ", "algusm"),
+//    )
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp)
     ) {
-        items(items = listOfBooks) { book ->
+        items(items = ) { book ->
             BookRow(book, navController)
         }
         //items(items = listOfBooks) { book -> BookRow(book, navController) }
@@ -99,7 +117,7 @@ fun BookList(navController: NavController) {
 }
 
 @Composable
-fun BookRow(book: MBook, navController: NavController) {
+fun BookRow(book: Item, navController: NavController) {
     Card(
         modifier = Modifier
             .clickable { }
@@ -132,6 +150,7 @@ fun BookRow(book: MBook, navController: NavController) {
 @Composable
 fun SearchForm(
     modifier: Modifier = Modifier,
+    viewModel: BookSearchViewModel,
     loadind: Boolean = false,
     hitn: String = "Search",
     onSerach: (String) -> Unit = {}
