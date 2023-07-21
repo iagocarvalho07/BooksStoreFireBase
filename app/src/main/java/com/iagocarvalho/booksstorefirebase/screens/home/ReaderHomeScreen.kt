@@ -264,7 +264,8 @@ fun BookRating(score: Double = 4.5) {
     Surface(
         modifier = Modifier
             .height(70.dp)
-            .padding(4.dp), shape = RoundedCornerShape(56.dp),
+            .padding(4.dp),
+        shape = RoundedCornerShape(56.dp),
         shadowElevation = 50.dp,
         tonalElevation = 20.dp,
 

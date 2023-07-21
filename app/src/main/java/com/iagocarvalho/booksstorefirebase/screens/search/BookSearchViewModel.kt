@@ -28,7 +28,7 @@ class BookSearchViewModel @Inject constructor(private val repository: BooksRepos
             }
             listOfBooks.value.loading = true
             listOfBooks.value = repository.getBooks(query)
-            Log.d("DATA", "serachBooks: ${listOfBooks.value.data.toString()}")
+            Log.d("DATAAPI", "serachBooks: ${listOfBooks.value.data.toString()}")
             if (listOfBooks.value.data.toString().isNotEmpty()) listOfBooks.value.loading = false
         }
     }

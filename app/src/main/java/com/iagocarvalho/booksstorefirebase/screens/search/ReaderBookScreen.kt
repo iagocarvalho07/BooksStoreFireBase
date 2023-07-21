@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -94,30 +96,30 @@ fun BookList(navController: NavController, viewModel: BookSearchViewModel) {
 
     }
 
-    val listOfBooks = viewModel.listOfBooks.value.data
-//
-//    val listOfBooks = listOf(
-//        MBook("asad", "hello ", "all of us ", "algusm"),
-//        MBook("asad", "hasdello ", "all of us ", "algusm"),
-//        MBook("asad", "hasdasello ", "all of us ", "algusm"),
-//        MBook("asad", "heddllo ", "all of us ", "algusm"),
-//        MBook("asad", "asda ", "asdasd of us ", "algusm"),
-//    )
+    // val listOfBooks = viewModel.listOfBooks.value.data
+
+    val listOfBooks = listOf(
+        MBook("asad", "hello ", "all of us ", "algusm"),
+        MBook("asad", "hasdello ", "all of us ", "algusm"),
+        MBook("asad", "hasdasello ", "all of us ", "algusm"),
+        MBook("asad", "heddllo ", "all of us ", "algusm"),
+        MBook("asad", "asda ", "asdasd of us ", "algusm"),
+    )
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp)
     ) {
-        items(items = ) { book ->
+        items(listOfBooks) { book ->
             BookRow(book, navController)
         }
-        //items(items = listOfBooks) { book -> BookRow(book, navController) }
-
-
     }
 }
 
 @Composable
-fun BookRow(book: Item, navController: NavController) {
+fun BookRow(
+    book: MBook,
+    navController: NavController
+) {
     Card(
         modifier = Modifier
             .clickable { }
@@ -131,8 +133,17 @@ fun BookRow(book: Item, navController: NavController) {
             modifier = Modifier.padding(5.dp),
             verticalAlignment = Alignment.Top
         ) {
-            val imageUrl = ""
-            AsyncImage(model = imageUrl, contentDescription = "")
+            val imageUrl = "http://books.google.com/books/content?id=eVs4DQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "",
+                modifier = Modifier
+                    .width(80.dp)
+                    .fillMaxHeight()
+                    .padding(
+                        4.dp
+                    )
+            )
             Column() {
                 Text(text = book.title, overflow = TextOverflow.Ellipsis)
                 Text(
@@ -171,7 +182,6 @@ fun SearchForm(
                 searchQueryState.value = ""
                 keyboardController?.hide()
             })
-
     }
 
 

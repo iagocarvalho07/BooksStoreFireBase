@@ -191,6 +191,7 @@ fun ReaderAppBar(
                         tint = Color.Red.copy(alpha = 0.7f),
                         modifier = Modifier.clickable { onbackArrowClicked.invoke() })
                 }
+                Spacer(modifier = Modifier.width(40.dp))
 
                 Text(
                     text = tittle,

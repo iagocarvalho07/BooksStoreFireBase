@@ -16,5 +16,4 @@ data class MBook (
             "notes" to this.notes,
         )
     }
-
 }
