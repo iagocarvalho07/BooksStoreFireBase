@@ -1,6 +1,5 @@
 package com.iagocarvalho.booksstorefirebase.repository
 
-import com.iagocarvalho.booksstorefirebase.data.DataOrException
 import com.iagocarvalho.booksstorefirebase.data.Resource
 import com.iagocarvalho.booksstorefirebase.model.ModelApi.Item
 import com.iagocarvalho.booksstorefirebase.network.BooksApi

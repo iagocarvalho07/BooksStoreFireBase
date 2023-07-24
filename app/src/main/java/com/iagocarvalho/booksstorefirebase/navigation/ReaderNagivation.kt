@@ -2,9 +2,11 @@ package com.iagocarvalho.booksstorefirebase.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.iagocarvalho.booksstorefirebase.screens.ReaderSplashScreen
 import com.iagocarvalho.booksstorefirebase.screens.details.BookDetailsScreen
 import com.iagocarvalho.booksstorefirebase.screens.home.HomeScreen
@@ -31,8 +33,13 @@ fun ReaderNagivation() {
             val viewmodel = hiltViewModel<BookSearchViewModel>()
             ReaderBookSearchScreen(navController = navController, viewmodel)
         }
-        composable(ReaderScreens.DetailsScreens.name){
-            BookDetailsScreen(navController = navController)
+        composable(route = ReaderScreens.DetailsScreens.name + "/{bookId}", arguments = listOf( navArgument("bookId"){
+            type = NavType.StringType
+            nullable = true
+        }
+
+        )){
+            BookDetailsScreen(navController = navController, bookId = it.arguments?.getString("bookId"))
         }
         composable(ReaderScreens.UpadateScreen.name){
             BookUpadateScreen(navController = navController)
