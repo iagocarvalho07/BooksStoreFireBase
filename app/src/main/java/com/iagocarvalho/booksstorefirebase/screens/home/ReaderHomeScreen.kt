@@ -1,9 +1,6 @@
 package com.iagocarvalho.booksstorefirebase.screens.home
 
-import android.icu.text.CaseMap.Title
-import android.service.quicksettings.Tile
-import android.support.customtabs.IPostMessageService.Default
-import androidx.compose.foundation.Image
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -21,32 +18,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -55,9 +42,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.google.api.ResourceProto.resource
 import com.google.firebase.auth.FirebaseAuth
 import com.iagocarvalho.booksstorefirebase.components.FABcontent
 import com.iagocarvalho.booksstorefirebase.components.ReaderAppBar
@@ -66,7 +53,7 @@ import com.iagocarvalho.booksstorefirebase.navigation.ReaderScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, viewModel: HomeScreenViewModel = hiltViewModel()) {
     Scaffold(
         topBar = {
             ReaderAppBar(tittle = "A.Reader", navController = navController)
@@ -75,7 +62,7 @@ fun HomeScreen(navController: NavController) {
     ) { contentPadding ->
         Box(modifier = Modifier.padding(contentPadding)) {
             Surface(modifier = Modifier.fillMaxSize()) {
-                HomeContent(navController = navController)
+                HomeContent(navController = navController, viewModel)
 
             }
         }
@@ -83,14 +70,23 @@ fun HomeScreen(navController: NavController) {
 }
 
 @Composable
-fun HomeContent(navController: NavController) {
-    val listOfBooks = listOf(
-        MBook("asad", "hello ", "all of us ", "algusm"),
-        MBook("asad", "hasdello ", "all of us ", "algusm"),
-        MBook("asad", "hasdasello ", "all of us ", "algusm"),
-        MBook("asad", "heddllo ", "all of us ", "algusm"),
-        MBook("asad", "asda ", "asdasd of us ", "algusm"),
-        )
+fun HomeContent(navController: NavController, viewModel: HomeScreenViewModel) {
+    var listOfBooks = emptyList<MBook>()
+    val currentUser = FirebaseAuth.getInstance().currentUser
+
+    if (!viewModel.data.value.data.isNullOrEmpty()){
+        listOfBooks = viewModel.data.value.data!!.toList().filter { mBook ->
+            mBook.userId == currentUser?.uid.toString()
+        }
+        Log.d("Books", "HomeContent: ${listOfBooks.toString()}")
+    }
+//    val listOfBooks = listOf(
+//        MBook("asad", "hello ", "all of us ", "algusm"),
+//        MBook("asad", "hasdello ", "all of us ", "algusm"),
+//        MBook("asad", "hasdasello ", "all of us ", "algusm"),
+//        MBook("asad", "heddllo ", "all of us ", "algusm"),
+//        MBook("asad", "asda ", "asdasd of us ", "algusm"),
+//        )
 
     val firebeseInstance = FirebaseAuth.getInstance()
     val currentUserName = if (!firebeseInstance.currentUser?.email.isNullOrEmpty())
@@ -120,7 +116,7 @@ fun HomeContent(navController: NavController) {
                 Divider()
             }
         }
-        ReaderRinghtNowArea(book = listOf(), navController = navController)
+        ReaderRinghtNowArea(book = listOfBooks, navController = navController)
         Text(text = "Reading List")
         BookListArea(listOfBooks = listOfBooks, navController = navController)
 
@@ -130,8 +126,8 @@ fun HomeContent(navController: NavController) {
 
 @Composable
 fun BookListArea(listOfBooks: List<MBook>, navController: NavController) {
-    HorizontalScrollComponent(listOfBooks) {
-        //todo on click go to detalis
+    HorizontalScrollComponent(listOfBooks){
+    navController.navigate(ReaderScreens.UpadateScreen.name + "/$it")
     }
 }
 
@@ -147,7 +143,7 @@ fun HorizontalScrollComponent(listOfBooks: List<MBook>, onCardPress: (String) ->
     ) {
         for (book in listOfBooks) {
             ListCard(book) {
-                onCardPress(it)
+                onCardPress(book.googleBookId.toString())
             }
         }
     }
@@ -155,10 +151,9 @@ fun HorizontalScrollComponent(listOfBooks: List<MBook>, onCardPress: (String) ->
 }
 
 
-@Preview
 @Composable
 fun ListCard(
-    book: MBook = MBook("meu livro", "running", "me and you", "Hello World"),
+    book: MBook = MBook(),
     onPresDetails: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -183,7 +178,7 @@ fun ListCard(
         Column(modifier = Modifier.width(screenWidth.dp - (spacing * 2))) {
             Row(horizontalArrangement = Arrangement.Center) {
                 AsyncImage(
-                    model = "",
+                    model = book.photoURl.toString(),
                     contentDescription = "Image Book",
                     modifier = Modifier
                         .height(140.dp)

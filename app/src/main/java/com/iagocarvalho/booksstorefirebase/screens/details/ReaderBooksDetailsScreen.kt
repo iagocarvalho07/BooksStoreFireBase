@@ -1,5 +1,6 @@
 package com.iagocarvalho.booksstorefirebase.screens.details
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.iagocarvalho.booksstorefirebase.components.ReaderAppBar
 import com.iagocarvalho.booksstorefirebase.data.Resource
@@ -160,9 +162,21 @@ fun ShowBooksDetails(bookinfo: Resource<Item>, navController: NavController) {
     Row(modifier = Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.SpaceAround) {
         RounderButton(label = "Save"){
             // save this book to the firestore
-            val book = MBook()
+            val book = MBook(
+                title = bookData.title,
+                authors = bookData.authors.toString(),
+                description = bookData.description.toString(),
+                category = bookData.categories.toString(),
+                notes = "",
+                photoURl = bookData.imageLinks.thumbnail,
+                publisheData = bookData.publishedDate,
+                pageCount = bookData.pageCount.toString(),
+                rating = 0.0,
+                googleBookId = googleBookId,
+                userId = FirebaseAuth.getInstance().currentUser?.uid.toString()
+            )
 
-            saveToFireBase(book)
+            SaveToFireBase(book , navController)
         }
         Spacer(modifier = Modifier.width(25.dp))
         RounderButton(label = "Cancel"){
@@ -173,7 +187,24 @@ fun ShowBooksDetails(bookinfo: Resource<Item>, navController: NavController) {
 
 }
 
-fun saveToFireBase(book: MBook) {
+
+fun SaveToFireBase(book: MBook, navController: NavController) {
     val db = FirebaseFirestore.getInstance()
-    TODO("Not yet implemented")
+    val dbCollection = db.collection("books")
+    if (book.toString().isNotEmpty()){
+        dbCollection.add(book)
+            .addOnSuccessListener { documentRef->
+                val docId = documentRef.id
+                    dbCollection.document(docId)
+                        .update(hashMapOf("id" to docId) as Map<String, Any>)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful){
+                                navController.popBackStack()
+
+                            }
+                        }.addOnFailureListener { Log.d("FBD", "saveToFireBase: Error updating doc", it) }
+            }
+    }else{
+
+    }
 }
