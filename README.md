@@ -15,5 +15,6 @@ liguagem : Kotlin
 jetpack compose
 android Studio
 
-https://github.com/iagocarvalho07/BooksStoreFireBase/assets/71970033/a8ed00fc-a6bb-4e44-bf14-8b44871fbc8c
+
+https://github.com/iagocarvalho07/BooksStoreFireBase/assets/71970033/319004db-1f5c-4a66-a3cb-e0ed85a81ecd
 
